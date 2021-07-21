@@ -25,10 +25,11 @@ const History = require('./models/History');
 
 const upload = require('./upload');
 
-app.use(bodyParser.json());
+app.use(bodyParser.json({extended: true}));
+app.use(bodyParser.urlencoded({extended: true}));
 
 mongoose
-    .connect(MONGODB, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false })
+    .connect(MONGODB, { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false, })
     .then(() => {
         app.listen(PORT, () => {
             console.log('서버 실행');
@@ -40,17 +41,21 @@ app.post('/signIn', async(req, res) => {
     const data = await method.getUserInfo();    
     var isNew = true;
 
-    for(let index = 0; index < data.length; index++) {
-        if(req.body.id === data[index].id) {
-            isNew = false;
-            if(data[index].complete) {
-                res.send(true);    
-            }else {
-                console.log(data[index].complete);
-                res.send(false);
+    if(data.length !== 0) {
+        for(let index = 0; index < data.length; index++) {
+            if(req.body.id === data[index].id) {
+                isNew = false;
+                if(data[index].complete) {
+                    res.send(true);    
+                }else {
+                    console.log(data[index].complete);
+                    res.send(false);
+                }
+                break;    
             }
-            break;    
         }
+    }else {
+        res.send(false);
     }
 
     if(isNew) {
@@ -69,6 +74,8 @@ app.post('/setGender', async(req, res) => {
     .then(data => {
         console.log(data)
     })        
+
+    res.end();
 })
 
 //생년월일 설정
@@ -77,10 +84,13 @@ app.post('/setBirth', async(req, res) => {
     .then(data => {
         console.log(data)
     })  
+
+    res.end();
 })
 
 //관심사 설정
 app.post('/setInterest', async(req, res) => {
+    console.log('관심사');
     if(req.body.hobby === 0){
         var allInterest = await Category.find().sort({'no' : 1});
         res.send(allInterest);
@@ -204,8 +214,8 @@ app.get('/sixthProfile', async(req, res) => {
 
 //프로필 이미지 업로드
 app.post('/uploadProfile', upload.single('profile'), async(req, res) => {
+    console.log(req.file);
     if(req.file !== undefined) {
-        console.log(req.body.index);
         var userInfo = await User.findOne({id : req.body.id});
 
         //수정
@@ -226,6 +236,8 @@ app.post('/uploadProfile', upload.single('profile'), async(req, res) => {
             console.log(data)
         })
     }
+
+    res.end();
 })
 
 //프로필 완성
@@ -244,7 +256,7 @@ app.post('/main', async(req, res) => {
 
     const Time = new Date();
     Time.setHours(Time.getHours() + 9);
- 
+
     Room.deleteMany({time : {"$lte" : Time}}).then(() => console.log('Deleted'));
     if(!req.body.onFilter) {
         roomInfo = await method.getRoomInfo();
@@ -287,7 +299,8 @@ app.post('/category', async(req, res) => {
 
 //방 생성하기
 app.post('/createRoom', async(req, res) => {
-    var hostedTime = new Date(new Date().getTime() + new Date().getTimezoneOffset() * 60 * 1000 + (9 * 60 * 60 * 1000));
+    const hostedTime = new Date();
+    hostedTime.setHours(hostedTime.getHours() + 9);
 
     const room = new Room({
         id: req.body.id,

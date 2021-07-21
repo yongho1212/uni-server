@@ -7,7 +7,7 @@ const userSchema = new Schema({
     gender: { type: String, default: '' },
     age: { type: Number, default: 0 },
     birth: { type: Date, default: '' },    
-    profile: { type: [String], default: new Array(6) },
+    profile: { type: [String], default: new Array(6)},
     hobby: { type: String, default: '' },
     complete: { type: Boolean, default: false }
 })
