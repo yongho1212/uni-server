@@ -9,6 +9,7 @@ const userSchema = new Schema({
     birth: { type: Date, default: '' },    
     profile: { type: [String], default: new Array(6)},
     hobby: { type: String, default: '' },
+    push: { type: Number, default: 0 },
     complete: { type: Boolean, default: false }
 })
 

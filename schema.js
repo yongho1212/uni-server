@@ -10,6 +10,7 @@ const typeDefs = `
         birth: String        
         profile: [String]
         hobby: String
+        push: Int
         complete: Boolean
     }
     

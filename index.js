@@ -325,3 +325,8 @@ app.post('/createRoom', async(req, res) => {
     room.save();
     history.save();
 })
+
+app.post('/modifyRoom', async(req, res) => {
+    await Room.findOneAndUpdate({_id : req.body._id}, {$set : {latitude: req.body.lat, longitude: req.body.lng, address: req.body.address, category: req.body.category, title: req.body.title, time: req.body.time, timeInfo: req.body.timeInfo}}, {new : true})
+    .then(data => console.log(data))    
+})
