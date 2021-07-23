@@ -243,8 +243,8 @@ app.post('/uploadProfile', upload.single('profile'), async(req, res) => {
 //프로필 완성
 app.post('/setCompleted', async(req, res) => {
     User.findOneAndUpdate({id: req.body.id}, {$set : {complete: req.body.complete}}, {new : true})
-        .then(data => {
-            console.log(data);
+    .then(data => {
+        console.log(data);
     })
 })
 
@@ -326,7 +326,30 @@ app.post('/createRoom', async(req, res) => {
     history.save();
 })
 
+app.post('/joinRoom', async(req, res) => {
+    await User.findOneAndUpdate({id: req.body.id}, {$inc : {push: 1}}, {new : true})
+    .then(data => {
+        res.send(JSON.stringify(data.push));
+    })
+})
+
+app.post('/checkJoin', async(req, res) => {
+    await User.findOneAndUpdate({id: req.body.id}, {$set : {push: 0}}, {new : true})
+    .then(data => {
+        res.send(JSON.stringify(data.push));
+    })
+})
+
+app.post('/getPush', async(req, res) => {
+    var userInfo = await User.findOne({id: req.body.id});
+    res.send(JSON.stringify(userInfo.push));
+})
+
 app.post('/modifyRoom', async(req, res) => {
     await Room.findOneAndUpdate({_id : req.body._id}, {$set : {latitude: req.body.lat, longitude: req.body.lng, address: req.body.address, category: req.body.category, title: req.body.title, time: req.body.time, timeInfo: req.body.timeInfo}}, {new : true})
     .then(data => console.log(data))    
 })
+
+
+
+
