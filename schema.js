@@ -5,6 +5,7 @@ const typeDefs = `
     type User {
         id: String
         email: String
+        nickname: String
         gender: String
         age: Int
         birth: String        
@@ -32,6 +33,8 @@ const typeDefs = `
         title: String
         time: String
         timeInfo: String
+        joinUser: [String]
+        requestUser: [String]
     }
 
     type Category {

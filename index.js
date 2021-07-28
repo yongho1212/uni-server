@@ -68,6 +68,15 @@ app.post('/signIn', async(req, res) => {
     }      
 })
 
+app.post('/setNickname', async(req, res) => {
+    User.findOneAndUpdate({id: req.body.id}, {$set : {nickname: req.body.nickname}}, {new : true})
+    .then(data => {
+        console.log(data)
+    })
+
+    res.end();
+})
+
 //성별 설정
 app.post('/setGender', async(req, res) => {
     User.findOneAndUpdate({id: req.body.id}, {$set : {gender: req.body.gender}}, {new : true})
@@ -103,8 +112,8 @@ app.post('/setInterest', async(req, res) => {
     }
 })
 
-//프로필 이미지 불러오기
-app.get('/firstProfile', async(req, res) => {     
+//메인프로필 이미지 불러오기
+app.get('/firstProfile', async(req, res) => {
     var userInfo = await User.findOne({id : req.query.id});
     var filePath;
     var count = 0;
@@ -326,13 +335,19 @@ app.post('/createRoom', async(req, res) => {
     history.save();
 })
 
+//조인 버튼 클릭 시
 app.post('/joinRoom', async(req, res) => {
+    //await Room.findOneAndUpdate({_id: req.body.roomId}, {$addToSet : {requestUser: req.body.id}}, {new : true})
+    await Room.findOneAndUpdate({_id: req.body.roomId}, {$push : {requestUser: req.body.id}}, {new : true})
     await User.findOneAndUpdate({id: req.body.id}, {$inc : {push: 1}}, {new : true})
     .then(data => {
-        res.send(JSON.stringify(data.push));
+        console.log(data)
     })
+
+    res.end();
 })
 
+//방 관리 버튼 클릭 시 유저의 push 필드값 0으로 초기화
 app.post('/checkJoin', async(req, res) => {
     await User.findOneAndUpdate({id: req.body.id}, {$set : {push: 0}}, {new : true})
     .then(data => {
@@ -340,15 +355,56 @@ app.post('/checkJoin', async(req, res) => {
     })
 })
 
-app.post('/getPush', async(req, res) => {
-    var userInfo = await User.findOne({id: req.body.id});
-    res.send(JSON.stringify(userInfo.push));
+app.post('/roomList', async(req, res) => {
+    var roomInfo = await Room.find({id: req.body.id});
+    
+    if(roomInfo.length !== 0) {
+        res.send(roomInfo);
+    }else {
+        res.send('0');
+    }
 })
 
+//방 클릭 시 자신이 만든 방에 조인 시청한 사람들의 목록을 볼 수 있음
+app.post('/userList', async(req, res) => {
+    var roomInfo = await Room.findOne({_id: req.body._id});
+    var userInfo = new Array();
+
+    if(roomInfo !== null) {
+        for(let i = 0; i < roomInfo.requestUser.length; i++) {
+            userInfo.push(await User.findOne({id: roomInfo.requestUser[i]}));
+        }
+    }
+
+    res.send(userInfo);
+    res.end();
+})
+
+//조인 신청한 사람을 수락하는 버튼을 눌렀을 때
+app.post('/allowUser', async(req, res) => {
+    var roomInfo;
+    var userInfo = new Array();
+    
+    roomInfo = await Room.findOneAndUpdate({_id: req.body._id}, {$pullAll : {requestUser: [req.body.id]}}, {new : true})
+    await Room.findOneAndUpdate({_id: req.body._id}, {$push : {joinUser: [req.body.id]}}, {new : true})
+
+    if(roomInfo !== null) {
+        for(let i = 0; i < roomInfo.requestUser.length; i++) {
+            userInfo.push(await User.findOne({id: roomInfo.requestUser[i]}));
+        }
+    }
+
+    res.send(userInfo);
+    res.end();
+})
+
+//방 수정
 app.post('/modifyRoom', async(req, res) => {
     await Room.findOneAndUpdate({_id : req.body._id}, {$set : {latitude: req.body.lat, longitude: req.body.lng, address: req.body.address, category: req.body.category, title: req.body.title, time: req.body.time, timeInfo: req.body.timeInfo}}, {new : true})
     .then(data => console.log(data))    
 })
+
+
 
 
 

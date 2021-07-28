@@ -10,6 +10,8 @@ const roomSchema = new Schema({
     title: String,
     time: Date,
     timeInfo: String,
+    joinUser: { type: [String] },
+    requestUser: { type: [String] },
 })
 
 module.exports = mongoose.model('Room', roomSchema);
